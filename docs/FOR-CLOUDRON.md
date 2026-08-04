@@ -80,17 +80,23 @@ filesystem backup abort, taking the whole server's backup run with it. That was 
 risk we identified for this package, because Lore keeps a content-addressed store of many small
 fragment and index files and runs incremental garbage collection by default since 0.8.4.
 
-We tested it rather than designing around it. An app-scoped backup was started while the server was
-actively writing roughly 200 MB of new fragments, and the two overlapped for the whole run:
+We tested it rather than designing around it. An app-scoped backup was started while a client
+`commit` was streaming 380 MB of new fragments into the store, and the overlap was verified by
+sampling the store size during the backup rather than assumed:
 
 ```
-backup starting at 14:37:35, writer still running: YES
-BACKUP exit=0 at 14:40:16
-errors / vanished / changed-file complaints: none
+store at backup start : 783,044 KiB   (writer confirmed alive)
+store at backup end   : 1,171,800 KiB
+growth DURING backup  : 388,756 KiB
+BACKUP exit=0, 9,082 files, no error / vanished / changed complaints
 ```
 
-The backup completed cleanly, and so did the concurrent write. A separate backup of the resulting
-259 MB store walked 2,973 files without complaint.
+The backup completed cleanly, and so did the concurrent write. A separate backup of a 259 MB store
+walked 2,973 files without complaint.
+
+The overlap check matters: two earlier attempts of ours reported a clean pass while overlapping the
+backup with operations that write nothing server-side, and would have passed regardless. Anyone
+repeating this measurement should assert that the store actually grew during the window.
 
 **The consequence for packaging is real:** this app does not need `persistentDirs` and a
 `backupCommand`, and plain `localstorage` is safe for it. We had been prepared to add both.

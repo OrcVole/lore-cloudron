@@ -30,7 +30,7 @@
     "localstorage": {},
     "tls": {}
   },
-  "memoryLimit": 1073741824,
+  "memoryLimit": 2147483648,
   "minBoxVersion": "9.2.0",
   "icon": "file://logo.png",
   "website": "https://epicgames.github.io/lore/",

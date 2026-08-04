@@ -56,7 +56,7 @@ otherwise; that claim was withdrawn once `minBoxVersion` was corrected. See the 
 | 1 — auth | **PASS** | Data plane is unauthenticated by design. Client connected and completed a full push and clone with no credentials and no client certificate, and the trace shows `Failed to load token map file: No such file or directory` then proceeding. Documented posture matches observed behaviour |
 | 2 — functional flows | **PASS** | Real `lore` 0.8.6+373 client against the live server. See the evidence table below |
 | 3 — update and restore | **PASS** | See below |
-| 4 — memory | pending | `memoryLimit` is 1 GiB and untuned |
+| 4 — memory | **PASS** | `memoryLimit` raised 1 GiB -> 2 GiB. See below |
 
 ## Gate 2 evidence: real client, real server
 
@@ -84,7 +84,8 @@ fragment and index files and running incremental garbage collection by default s
 | Invariant | Proof |
 | --- | --- |
 | Backup of a large store completes | 259 MB store, **2,973 files**, `App is backed up`, exit 0 |
-| **Backup survives concurrent heavy writes** | Backup started at 14:37:35 with the writer confirmed still running, finished exit 0 at 14:40:16. Concurrent `stage` exit 0, `commit` exit 0. **No error, vanished-file or changed-file complaints** |
+| **Backup survives concurrent heavy writes** | Store grew **388,756 KiB during the backup itself** (783,044 -> 1,171,800 KiB) while a `commit` streamed 380 MB in. Backup exit 0 over 9,082 files, concurrent `commit` exit 0, `push` exit 0, **no error, vanished-file or changed-file complaints** |
+| The overlap actually happened | The test samples the server store at backup start, mid-backup and end, and prints the growth. It cannot pass by failing to overlap, which is how the first two attempts passed |
 
 **Packaging consequence:** `persistentDirs` plus a `backupCommand` are **not** required. Plain
 `localstorage` is safe for this application. We were prepared to add both, and the measurement said
@@ -94,6 +95,45 @@ they were unnecessary.
 `lore repository gc` command; the container ships only `loreserver` and has no CLI to run it. Since
 0.8.4 the server runs incremental GC by default, so server-side GC is the realistic case and was
 plausibly active during the window, but that was not independently confirmed.
+
+## Gate 4 evidence: memory
+
+| Condition | `memory.current` | `memory.peak` |
+| --- | --- | --- |
+| At rest | 106 MiB | 121 MiB |
+| After a 191 MB commit | 416 MiB | 419 MiB |
+| After cloning 191 MB back | 473 MiB | 475 MiB |
+| After a 380 MB commit | 611 MiB | **616 MiB** |
+
+**Read those figures with care, because I first read them wrongly.** `memory.current` in cgroup v2
+**includes page cache**. Breaking down the peak state:
+
+```
+anon    243 MiB    real, non-reclaimable
+file    725 MiB    page cache, reclaimed under pressure
+kernel   38 MiB
+slab     34 MiB
+```
+
+**Anonymous memory stayed near 243 MiB even under a 400 MB commit**, and is bounded by stream
+buffers rather than by payload size. The apparent growth from 121 to 616 MiB was three-quarters
+page cache produced by writing the store to disk.
+
+**The first conclusion drawn here was wrong.** From the raw peaks it looked as though memory scaled
+with payload, and therefore that a ~1 GB push would exceed a 1 GiB limit and be OOM-killed. It would
+not: the kernel evicts page cache under a cgroup limit rather than killing the process. The metric
+was conflating cache with usage.
+
+**`memoryLimit` is nevertheless raised from 1 GiB to 2 GiB, for a different and honest reason.**
+Not to avoid an OOM that would not have happened, but because this application exists to move very
+large binary assets and page-cache headroom is what keeps that fast. A 1 GiB cap would force
+constant reclaim during large operations. 2 GiB is a modest slice of the 16 to 64 GB a machine
+hosting this workload would realistically have, and the value is documented as tunable.
+
+**Not established:** behaviour with a single file of several GB. Everything measured here used many
+files of 20 to 30 MB. Upstream's decision log contains an entry titled "Increasing fragment max
+size", so large single files have driven changes upstream, and this is the obvious next measurement
+at the first version bump.
 
 ## Gate 3 evidence: restore
 
@@ -121,17 +161,30 @@ repositories created after the restore point. The reason is that Lore's state is
 whole story. The #200 pattern should be scoped to database-backed applications rather than stated
 generally.
 
-### A test that proved nothing, and why it is recorded
+### Two churn tests that proved nothing, and passed anyway
 
-The first churn attempt overlapped the backup with `lore push`. It reported success and was
-worthless: `push` transfers about **124 bytes**, because content reaches the server during
-`stage`/`commit`. Timestamps showed the backup began eight seconds after a push that had already
-finished in three.
+It took three attempts to measure this, and the first two both reported a clean pass.
 
-The architectural fact that invalidated the test had been established earlier in the same round, in
-gate 2, and was simply not applied to the test design. A green result from a test that could not
-have failed is exactly the shape `OPERATING-DEFAULTS.md` §3 warns about, and it was caught only by
-reading the timestamps rather than the exit code.
+**Attempt 1 overlapped the backup with `push`.** Worthless: `push` moves the branch pointer, about
+124 bytes to 888 KiB. Timestamps showed the backup starting eleven seconds after a commit that had
+already finished.
+
+**Attempt 2 overlapped the backup with `stage`,** on the reasoning that content moved during
+`stage`/`commit`. Also worthless, and worse, because it was a confident correction of attempt 1
+built on an unmeasured assumption. `stage` writes **0 KiB** to the server.
+
+**Attempt 3** overlapped `commit`, which is where content actually moves, and **verifies the
+overlap by sampling the server store during the backup**. That check is the difference between a
+test and a decoration: a test that cannot report "no overlap occurred" will pass whether or not it
+did anything.
+
+The failure mode is worth naming because it repeated. Both bad attempts produced exit 0 and a
+plausible narrative, and neither could have failed. `OPERATING-DEFAULTS.md` §3 says a passing check
+is a claim until its failure has been observed; the sharper form for concurrency tests is that
+**the test must be able to prove it did the concurrent thing at all.**
+
+The claim from attempt 2 was written into this file and into `docs/FOR-CLOUDRON.md`, committed and
+pushed, before being withdrawn. It is restated above only because attempt 3 earned it.
 
 ### Two client behaviours that will generate support questions
 
@@ -153,13 +206,26 @@ validated; only `lore://`, `lores://` and `grpcs://` were accepted.
 `lore dirty <path>` first, or a running `lore service`, it reports "No changes staged" and the
 commit fails with "Nothing staged for commit" while the files sit plainly in the working copy.
 
-### A note on `push` output
+### Where content actually moves: `commit`, not `stage` and not `push`
 
-`push` reports only the revision fragment, `Pushed 1 fragment(s), 124.00 bytes`, even for a 31 MB
-corpus. Content is written to the server during `stage`/`commit`; `push` advances the branch
-pointer. **Do not use the push byte count to measure transfer volume** — it will read as though
-nothing moved. Server-side store growth is the honest measure, which is why the incremental result
-above was taken that way.
+This cost three invalid tests before it was measured properly. Established by watching the
+**server's** store size around each step in isolation, with a 150 MB payload:
+
+| Step | Server store delta |
+| --- | --- |
+| `lore dirty` | +28 KiB (metadata) |
+| `lore stage` | **+0 KiB** — purely local, writes to the working copy's own store |
+| `lore commit` | **+151,844 KiB** — this is the transfer |
+| `lore push` | +888 KiB — the revision and branch pointer only |
+
+**Two consequences.**
+
+`push` reports `Pushed 1 fragment(s), 124.00 bytes` even for a 31 MB corpus, because by then the
+content has already arrived. **Never use the push byte count to measure transfer volume.** Every
+server-side measurement in this document is taken from store growth for that reason.
+
+Any test that needs to overlap with server-side writes must overlap with **`commit`**. Two tests in
+this round failed because they did not, and both reported success. See below.
 
 ### Harness errors made and corrected, recorded because they recurred
 
