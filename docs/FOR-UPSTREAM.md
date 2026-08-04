@@ -82,7 +82,62 @@ at all. That is convenient and we relied on it, but it took a run of `--help` to
 the layering description in the configuration reference lists `<environment>.toml` generically
 without noting which environment you get by default. Worth one sentence.
 
-## 4. Things that made packaging easy, for balance
+## 4. Could the HTTP endpoint answer `/` with something, rather than a bare 404?
+
+Small, and entirely optional, but it would improve the first impression on every hosted deployment
+rather than just ours.
+
+The HTTP endpoint serves `/health_check` and returns an empty **404** for everything else, including
+`/`. That is perfectly reasonable for a machine-facing service. The difficulty is that people do
+point browsers at servers, and hosting platforms give them a button that does exactly that.
+
+Cloudron requires an `httpPort` and puts an **Open** button next to every installed application. For
+this package that button leads to `/`, so a user who installs Lore and does the obvious thing gets a
+blank 404 and no indication whether the server is working, misconfigured, or broken. We document it,
+but documentation is read after the confusion, not before.
+
+**Suggested fix:** answer `GET /` with a small `200`, in whatever form suits you. Even a plain-text
+line naming the product and version, and pointing at the client documentation, would do. Something
+like:
+
+```
+Lore Server 0.8.6 — this is a machine-facing endpoint.
+Connect with the lore CLI: lores://<host>:41337
+Docs: https://epicgames.github.io/lore/
+```
+
+The value is that it tells a human three things at the moment they are confused: the server is
+alive, it is Lore, and the browser is the wrong tool. It also gives packagers a sensible page to
+point at without running a second HTTP process alongside the server purely for cosmetics, which is
+the alternative we considered and rejected.
+
+Worth noting this becomes less pressing when the roadmapped 2027 web client lands, since `/` will
+presumably serve that. Until then it is the only browser-visible surface Lore has.
+
+## 5. A client-side way to trust a private certificate
+
+Related, and slightly more consequential for self-hosters.
+
+The client refuses a server certificate it cannot verify, which is correct. But there appears to be
+no client-side way to supply trust: no `--insecure`, no `--ca-file`, no equivalent in
+`lore --help` or any subcommand help, and `SSL_CERT_FILE` is not honoured.
+
+The only route we found is installing the issuing CA into the **operating system** trust store. We
+verified that this works: with `update-ca-certificates` run against a private CA, a client completed
+create, stage, commit and push against a privately-signed server.
+
+That is a heavy requirement for anyone running an internal CA, a corporate PKI, or a lab
+environment, because it has to be done on every developer machine and every build agent, at the
+OS level, often needing administrator rights.
+
+**Suggested fix:** a `--ca-file` flag, or an environment variable, naming additional trust anchors.
+Not `--insecure`; the useful thing is to trust a *specific* CA, not to stop checking.
+
+This did not affect our package, because Cloudron issues a publicly trusted certificate and we wire
+the server to it. We raise it because the alternative deployment path, which your own documentation
+describes, is harder than it looks.
+
+## 6. Things that made packaging easy, for balance
 
 - **Static-ish linking.** The binary needs only `libgcc_s`, `libm` and `libc`. No runtime packages,
   no bundled interpreter, no surprises.

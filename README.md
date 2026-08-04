@@ -16,6 +16,21 @@ command-line client and the language SDKs. Upstream's roadmap lists a web client
 | Licence | MIT, both upstream and this packaging |
 | Architecture | `linux/amd64` only, see below |
 
+## There is no web interface, and the Open button returns a 404
+
+Worth stating before anything else, because it is the first thing a user meets. Cloudron requires an
+`httpPort` and puts an **Open** button beside every installed application. Lore's HTTP endpoint
+serves exactly one path, `/health_check`, so that button returns an empty **404**. Nothing is
+broken; there is simply nothing to open.
+
+All work happens through the `lore` command-line client against port 41337. `docs/FOR-UPSTREAM.md`
+asks upstream to consider answering `/` with a short informational response, which would fix this
+for every hosted deployment rather than only this package.
+
+Upstream's roadmap commits to a web client in **2027**, with a VS Code plugin in progress before
+that. When it arrives this package will need revisiting rather than updating; `AGENTS.md` records
+what changes.
+
 ## Topology
 
 Three listeners, and only one of them is an ordinary web port:
