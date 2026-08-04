@@ -73,7 +73,34 @@ change each port independently. For a package where the two ports must stay on t
 there is no way to express that constraint in the manifest, so it lives in the post-install message
 and hopes to be read.
 
-## 4. Things that worked exactly as documented
+## 4. A content-addressed store did not disturb a live backup, measured
+
+Platform facts records a failure class where an application's own background file churn makes the
+filesystem backup abort, taking the whole server's backup run with it. That was the single largest
+risk we identified for this package, because Lore keeps a content-addressed store of many small
+fragment and index files and runs incremental garbage collection by default since 0.8.4.
+
+We tested it rather than designing around it. An app-scoped backup was started while the server was
+actively writing roughly 200 MB of new fragments, and the two overlapped for the whole run:
+
+```
+backup starting at 14:37:35, writer still running: YES
+BACKUP exit=0 at 14:40:16
+errors / vanished / changed-file complaints: none
+```
+
+The backup completed cleanly, and so did the concurrent write. A separate backup of the resulting
+259 MB store walked 2,973 files without complaint.
+
+**The consequence for packaging is real:** this app does not need `persistentDirs` and a
+`backupCommand`, and plain `localstorage` is safe for it. We had been prepared to add both.
+
+Two honest limits. This exercises the server's own write path, not the client-side
+`lore repository gc` command, because the container ships only the server binary and has no CLI to
+invoke it. And it is one application on one rig, so it is a data point rather than a general
+clearance for content-addressed stores.
+
+## 5. Things that worked exactly as documented
 
 - Publishing raw TCP and UDP ports alongside an `httpPort` for the health check. The GitLab and
   Minetest pattern generalised cleanly to a package with no browser surface at all.

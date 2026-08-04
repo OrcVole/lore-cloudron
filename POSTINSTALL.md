@@ -10,6 +10,8 @@ There are two ways to harden it, and you should pick one before putting real wor
 
 **Or close the ports.** If this server only needs to be reachable from inside your own network, turn off the TCP and UDP port forwarding for this app in the Cloudron dashboard and reach it another way, such as over your VPN.
 
+**`lore login` will return `NotSupported`, code 18, and that is correct.** Since Lore 0.8.6, `login` and `info` return `NotSupported` rather than a generic error when the server has no auth endpoint configured. This server has none until you configure one, so code 18 means "authentication is switched off here", not "something is broken". Scripts that branch on these codes need updating for 0.8.6 generally.
+
 ### 2. Keep both port numbers the same
 
 The gRPC (TCP) and QUIC (UDP) endpoints must be published on the **same** port number. Clients are configured with a single address and expect to find both transports there.
