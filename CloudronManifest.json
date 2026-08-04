@@ -46,5 +46,6 @@
     "git",
     "assets",
     "rust"
-  ]
+  ],
+  "dockerImage": "ghcr.io/orcvole/lore-cloudron@sha256:b3b843b4c920283ece7bacf30ac7b3f907b140c2919362c86428623c161831bc"
 }

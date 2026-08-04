@@ -146,9 +146,36 @@ which the foundation document asserted. Both are settled at gate 0, not here.
 
 ## Alternatives rejected
 
-**Self-signed into `/app/data/certs`,** the foundation document's original plan. Guaranteed to work,
-but every client needs manual trust configuration, which fails the stranger test. Retained only as a
-documented fallback if the `tls` addon proves unavailable.
+**Self-signed into `/app/data/certs`,** the foundation document's original plan. Described there as
+"guaranteed to work". **It is not, and this was measured on 2026-08-04.**
+
+A `lore` 0.8.6 client was pointed at a local container presenting a self-signed certificate whose
+SAN included `localhost` and `127.0.0.1`. It refused:
+
+```
+[Error] Disconnected from server
+  at lore-transport/src/grpc/mod.rs:588:24
+exit=6
+```
+
+No `--insecure`, `--ca`, `--tls` or equivalent option appears anywhere in `lore --help` or in the
+subcommand help, and `SSL_CERT_FILE` is not honoured.
+
+**Corrected the same day, by measurement.** Installing the issuing CA into the **operating system
+trust store** does work. With `update-ca-certificates` run against a private CA, a client completed
+the full workflow against a privately-signed server: create, stage, commit 1.91 MiB, push, list. So
+the accurate statement is narrower than the first draft: **there is no client-side flag or
+environment variable, only the OS trust store.**
+
+That does not rescue the fallback, it just prices it correctly. Self-signing means every person and
+every build agent that touches the repository must first install your CA at the operating-system
+level, on every machine. The `tls` addon costs them nothing at all. The stranger test is the
+difference, not impossibility.
+
+**The `tls` addon therefore stays required for this package**, and the self-signed path is recorded
+as viable-but-hostile rather than broken. The transcript backing this is the terminal capture
+shipped as `media-terminal.png`, produced against `lore.example.com` on a local container running
+the published image digest.
 
 **Cloudron OIDC for the data plane.** Lore's auth is JWT against a JWKS endpoint, and the
 client-side token flow is Lore's own. Out of scope for v1, as both the June foundation document and

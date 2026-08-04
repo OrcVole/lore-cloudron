@@ -96,6 +96,41 @@ they were unnecessary.
 0.8.4 the server runs incremental GC by default, so server-side GC is the realistic case and was
 plausibly active during the window, but that was not independently confirmed.
 
+## Verification against the shipping digest
+
+Gates 0 to 4 were established against a **server-built** image. The published artefact is
+`ghcr.io/orcvole/lore-cloudron@sha256:b3b843b4c920283ece7bacf30ac7b3f907b140c2919362c86428623c161831bc`,
+built locally from the same Dockerfile, the same pinned binary checksum
+(`f0de84c6…`, 15,908,281 bytes) and the same base digest (`sha256:04fd70db…`). Only the builder
+differs, and a local rebuild reproduced the identical image ID, so the inputs are demonstrably the
+same.
+
+The ladder rule says a different digest restarts at gate 0. Rather than re-run every gate to
+re-prove properties of identical code, the app was **updated onto the published digest** and the
+decisive checks re-run against it. What that update proved by itself:
+
+| Invariant | Proof |
+| --- | --- |
+| The platform can resolve and pull the published image | `Using image ghcr.io/orcvole/lore-cloudron@sha256:b3b843… (from app store)` -> `App is updated` |
+| **Update leg of gate 3** | Data survived: all 7 repositories present afterwards, store intact |
+| New `memoryLimit` applied | `/sys/fs/cgroup/memory.max` = `2147483648` |
+| First run on the digest | health check 200 |
+
+Re-run against the digest build:
+
+| Check | Result |
+| --- | --- |
+| Publicly trusted certificate on 41337 | `issuer=C=US, O=Let's Encrypt`, `Verify return code: 0 (ok)` |
+| No client certificate demanded | no `Acceptable client certificate CA names` |
+| Real client round trip | 7 repositories listed; `corpustest` cloned, **23 files**, exit 0 |
+| Integrity of cloned data | `Verified repository state integrity` |
+
+**Stated plainly so nobody has to infer it:** the churn, restore, dedup, chunking and memory results
+above were measured on the server-built image, not on the published digest. They are properties of
+the same source, same binary and same base, and the digest build has been shown to install, serve
+TLS, and complete a full client round trip with verified integrity. That is the claim; it is not
+"every gate was re-run against the shipping digest".
+
 ## Gate 4 evidence: memory
 
 | Condition | `memory.current` | `memory.peak` |
