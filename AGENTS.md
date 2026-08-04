@@ -68,6 +68,28 @@ without bound. The guard checks both store roots and re-asserts when either is w
 **The data plane ships unauthenticated**, as upstream ships it. Both hardening paths live in
 `POSTINSTALL.md`. Do not invent credentials.
 
+## What the 2027 web client will change
+
+Upstream's roadmap lists a web client as **committed for 2027**, with a VS Code plugin in progress
+before that. That is not a distant abstraction; it changes several settled decisions here, and
+whoever picks this up at that point should expect a **fresh packaging round, not an update**.
+
+- **`httpPort` semantics change.** Today 41339 exists only to serve `/health_check`, and the
+  dashboard's Open button returns an empty 404 as a result. When a real interface exists, `httpPort`
+  should point at it and the 404 note in `POSTINSTALL.md` comes out.
+- **Single sign-on becomes relevant.** It is out of scope for v1 only because Lore's auth is JWT
+  against a JWKS endpoint driven by the CLI's own token flow. A browser client is what makes
+  Cloudron OIDC worth wiring, and that is the point to revisit `[server.auth]`.
+- **The unauthenticated-by-default posture gets harder to justify.** A machine-only data plane on a
+  documented port is one thing; a login page is another. Expect to revisit whether the ports should
+  still ship enabled.
+- **The announcement and description change shape.** Both currently lead with "this is headless and
+  that is the correct shape for a machine-facing service". That framing expires.
+
+Until then, do not add a landing page or a second HTTP process to paper over the 404 without a
+deliberate decision: it puts a second process in the container for cosmetic benefit, and the
+2027 client will remove the need.
+
 ## Things that are known and unresolved
 
 - **Does `verify_client_certs = true` actually break a client?** Upstream says it requires mutual

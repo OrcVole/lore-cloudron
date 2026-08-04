@@ -1,3 +1,11 @@
+## The Open button will show a 404, and that is expected
+
+Lore has no web interface. The HTTP port exists only so Cloudron can health-check the app, and it serves exactly one path, `/health_check`. Opening this app from the dashboard therefore returns an empty **404**. Nothing is broken.
+
+Everything is done through the `lore` command-line client, over port 41337. See below.
+
+Upstream's roadmap commits to a **web client in 2027**, with a VS Code plugin in progress before that. When that lands this package will gain a real interface, and the port it serves on will be revisited.
+
 ## Read this before you push anything
 
 ### 1. The data plane is unauthenticated by default
