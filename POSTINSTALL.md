@@ -2,9 +2,41 @@
 
 Lore has no web interface. The HTTP port exists only so Cloudron can health-check the app, and it serves exactly one path, `/health_check`. Opening this app from the dashboard therefore returns an empty **404**. Nothing is broken.
 
-Everything is done through the `lore` command-line client, over port 41337. See below.
+Everything is done through the `lore` command-line client, over port 41337.
 
-Upstream's roadmap commits to a **web client in 2027**, with a VS Code plugin in progress before that. When that lands this package will gain a real interface, and the port it serves on will be revisited.
+Upstream's roadmap commits to a **web client in 2027**, with a VS Code plugin in progress before that. When that lands this package will gain a real interface.
+
+## So how do I check it is actually working?
+
+Three checks, weakest to strongest. **Only the third one proves your clients can reach the server.**
+
+**1. The dashboard health indicator.** If this app shows as healthy, the server process is running and answering. This is Cloudron polling `/health_check` for you.
+
+**2. In a browser or with curl:**
+
+```
+curl -i https://myapp.example.com/health_check
+```
+
+A `200` means the server is up. In a browser you will see a **blank page**, because the response is deliberately empty. Blank is a pass here; the 404 you get from `/` is not.
+
+**3. The one that matters, from a machine with the `lore` client:**
+
+```
+lore repository list lores://myapp.example.com:41337
+```
+
+An empty list and a zero exit code means everything works: the port is reachable, TLS is presenting a valid certificate, and the data plane is answering. Any repositories you have created will be listed.
+
+### Why the third check is the only real one
+
+**Checks 1 and 2 only test the HTTP port, which is not the port your clients use.** Lore's actual work happens on **41337**, published separately as a TCP and a UDP port, and Cloudron does not health-check those.
+
+So this app can show a healthy green indicator while no client can connect at all, for instance if the TCP or UDP port is blocked by a firewall between you and the server, or if the two ports have been set to different numbers in the dashboard. If check 3 fails while checks 1 and 2 pass, the server is fine and the problem is the network path to 41337.
+
+### If check 3 hangs rather than failing
+
+Use `lores://`, not `lore://`. See the connection section below: `lore://` is the plaintext scheme, and against this server it retries forever instead of reporting an error.
 
 ## Read this before you push anything
 
