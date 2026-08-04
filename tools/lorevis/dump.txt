@@ -1,0 +1,62 @@
+########## lore repository dump --max-depth 2 ##########
+Repository 019fcdabe36d76b2beda86aa157cb07f
+Revision d6f1cbb99aabb7cbd71ad332eda99cf187ba6a929877a3db9d0068c95db353e0
+Revision  : 2
+Signature : d6f1cbb99aabb7cbd71ad332eda99cf187ba6a929877a3db9d0068c95db353e0
+Tree: hash 5a8435dd4219f3e20f5905c21f8832ed404dce7fddad795ce10b75a5fe410503 size 32963183
+readme.txt id 30 parent 0 sibling 6 mode 00 size 3 flags 1 addr c4edbcbf33a8f0638c08df7f4a130b12a59035f955a648b2766892a92d5a3afe-019fcdabe45b7ea0a2eb29f45c42ff4c
+incremental/ id 6 parent 0 sibling 5 mode 00 size 8000000 flags 0 child 15
+incremental/large.bin id 15 parent 6 sibling 0 mode 00 size 8000000 flags 1 addr 8f6dd6ca4cd9fa08e43ecdf8eefdd132cbe8b5859c4c0725bb857ea40081b0bf-019fcdabe3807d308eb79b4ec0f7b860
+dedup/ id 5 parent 0 sibling 4 mode 00 size 8000000 flags 0 child 22
+dedup/copy-b.bin id 22 parent 5 sibling 18 mode 00 size 4000000 flags 1 addr 86b8a6624f6eef889b9f989aa7b5aba96ac1e181804ea6ddc9f565a00d8ba8e3-019fcdabe3807d308eb79bbfa698ad9a
+dedup/copy-a.bin id 18 parent 5 sibling 0 mode 00 size 4000000 flags 1 addr 86b8a6624f6eef889b9f989aa7b5aba96ac1e181804ea6ddc9f565a00d8ba8e3-019fcdabe3807d308eb79b7a4b27c4a7
+raw/ id 4 parent 0 sibling 3 mode 00 size 12000000 flags 0 child 14
+raw/repetitive.txt id 14 parent 4 sibling 10 mode 00 size 4000000 flags 1 addr 6879bb76eec65e7cb7834b86d225073bfe60814c8e400746a242b87e9d43f69f-019fcdabe3807d308eb79b34b56db9b8
+raw/random.bin id 10 parent 4 sibling 8 mode 00 size 4000000 flags 1 addr 86b8a6624f6eef889b9f989aa7b5aba96ac1e181804ea6ddc9f565a00d8ba8e3-019fcdabe3807d308eb79af151c300f9
+raw/zeros.bin id 8 parent 4 sibling 0 mode 00 size 4000000 flags 1 addr 0e281cf932c7c675cef09fb512c74ea2aa76debef243105ace96cf720ca3f548-019fcdabe3807d308eb79ac16fbadd29
+audio/ id 3 parent 0 sibling 2 mode 00 size 631680 flags 0 child 20
+audio/tone.wav id 20 parent 3 sibling 16 mode 00 size 480078 flags 1 addr 40822bb0da2b889c6294dd7e33f36210bf9bc652f0bf0b9bc110072bf603fdb7-019fcdabe3807d308eb79b9c3c976a37
+audio/tone.flac id 16 parent 3 sibling 11 mode 00 size 73943 flags 1 addr 8c8c5c21d20c534200d59fa74eba93fb53462583f95806566e4c0bc8e55db35b-019fcdabe3807d308eb79b5227554ca8
+audio/tone.opus id 11 parent 3 sibling 0 mode 00 size 77659 flags 1 addr d13c3e124f32be1d1929ab7017ef6f7c9a596f7710f4d6734522a4f60866e90e-019fcdabe3807d308eb79b05fbb1afc2
+video/ id 2 parent 0 sibling 1 mode 00 size 651325 flags 0 child 24
+video/clip.prores.mov id 24 parent 2 sibling 21 mode 00 size 481179 flags 1 addr cbff87bb1c277fd2ae3666de2780f7af917090d8825e5081fb8697d0f907e335-019fcdabe3807d308eb79bd65a453fac
+video/clip.h264.mp4 id 21 parent 2 sibling 17 mode 00 size 38817 flags 1 addr 358853791bc357467968f835d0035c5d8ff7251a73c72a9f47677d4b5234bdd6-019fcdabe3807d308eb79bad61416d74
+video/clip.vvc.mp4 id 17 parent 2 sibling 12 mode 00 size 33062 flags 1 addr c5d7342d69ec80e29163c4cdbc1b880080c0bfa882b66f9648a0a007e5651968-019fcdabe3807d308eb79b6597ac1ee2
+video/clip.av1.webm id 12 parent 2 sibling 7 mode 00 size 48989 flags 1 addr a156bf3493dff8dba26881623d09ebb9be09879ebb1f9308e04c9d220256c320-019fcdabe3807d308eb79b12e6601141
+video/clip.av1.mp4 id 7 parent 2 sibling 0 mode 00 size 49278 flags 1 addr c7d718ee703a13c17240ffdafe6c8eafdabb3e59a29167a6557d2d46515ac040-019fcdabe3807d308eb79addce8423ff
+image/ id 1 parent 0 sibling 0 mode 00 size 3680175 flags 0 child 29
+image/still.tga id 29 parent 1 sibling 28 mode 00 size 57858 flags 1 addr 90db0db5d0843b7b4cbbfd4e9644f7c8ca72288e7bb7ad8ca49acdad3523cdc6-019fcdabe3807d308eb79c202bb4ae26
+image/still.exr id 28 parent 1 sibling 27 mode 00 size 3154312 flags 1 addr eee7d80eed58d8733469bc00ca302a02c0ad6f6a072acbbf99b48e3fb420b8ab-019fcdabe3807d308eb79c19ca169c05
+image/still.tiff id 27 parent 1 sibling 26 mode 00 size 330402 flags 1 addr 20b25d565bba71033db179f4d5bfa7e146f8d753dfd3bd76186ab7364fbd5d70-019fcdabe3807d308eb79c0691d2aa1e
+image/still.jxl id 26 parent 1 sibling 25 mode 00 size 22311 flags 1 addr 974a37be928a2273610c6f31c74c1d76bc6b5509423b587409264a3c2a808c38-019fcdabe3807d308eb79bf06f628c7d
+image/still.avif id 25 parent 1 sibling 23 mode 00 size 3971 flags 1 addr 1dfd6a7fe5de53089eed52f6608728498740687eb75737a659e270b10fefb555-019fcdabe3807d308eb79be442a575d3
+image/still.webp id 23 parent 1 sibling 19 mode 00 size 9502 flags 1 addr 789cbbc4abd58d9f4934975caad9da2a7c2f90c3bc9b4bce2e4ac7c2c5cb8e47-019fcdabe3807d308eb79bcb6e77f239
+image/still.jpg id 19 parent 1 sibling 13 mode 00 size 21191 flags 1 addr 6b7db421b2beccc01f731ecc4dee9816364f2097118adb9d29589ab59e1217e1-019fcdabe3807d308eb79b8bed6b1bb9
+image/still16.png id 13 parent 1 sibling 9 mode 00 size 49282 flags 1 addr 181213ab5d1757869fcb3d01873b46156e3ce0caef0df16efd0c9414bea205c9-019fcdabe3807d308eb79b2bc5bfd58a
+image/still.png id 9 parent 1 sibling 0 mode 00 size 31346 flags 1 addr 3bb0aa073265b6acd1022b1d78c54c69fa4c804558e6700d6560cd580e710cbd-019fcdabe3807d308eb79aed7369f39e
+
+########## lore history ##########
+Revision  : 2
+Signature : d6f1cbb99aabb7cbd71ad332eda99cf187ba6a929877a3db9d0068c95db353e0
+Branch    : e726318bbc3fd75ac8733a7e030cc35b
+Date      : Tue, 4 Aug 2026 16:47:02 +0000
+    retouch hero texture
+
+Revision  : 1
+Signature : 8c2f0c6987931615cd65df7758724de2465b166b3ae5f6a3a95d9fbb71cf4588
+Branch    : e726318bbc3fd75ac8733a7e030cc35b
+Date      : Tue, 4 Aug 2026 16:47:02 +0000
+    import art, audio and cinematics
+
+
+########## lore status ##########
+Repository 019fcdabe36d76b2beda86aa157cb07f
+On branch main revision 2 -> d6f1cbb99aabb7cbd71ad332eda99cf187ba6a929877a3db9d0068c95db353e0
+Remote revision 2 -> d6f1cbb99aabb7cbd71ad332eda99cf187ba6a929877a3db9d0068c95db353e0
+Local branch in sync with remote
+
+########## lore branch list ##########
+Local branches:
+* main
+Remote branches:
+  main
