@@ -32,8 +32,15 @@ though we were expecting trouble.
 this. It only bites people who consume the release asset directly, which is exactly what a packager
 does.
 
-**Suggested fix:** set mode `0755` on the binary inside the release archives. A one-line change in
-the release packaging step, and it removes a papercut for every downstream packager.
+**This is not specific to the server asset.** The CLI archive
+(`lore-v0.8.6-x86_64-unknown-linux-gnu.tar.gz`, SHA-256
+`a7aaeb32a15f6674a328e19096c48dcab5b29b283ba51d37abdadedd930812ad`) extracts `lore` as `rw-r--r--`
+too, so anyone installing the client by hand rather than through `install.sh` hits the same thing.
+It appears to be a property of the release packaging rather than of one target.
+
+**Suggested fix:** set mode `0755` on the binaries inside the release archives. A one-line change in
+the release packaging step, and it removes a papercut for every downstream packager and every user
+who installs the CLI manually.
 
 ## 2. `verify_client_certs = true` on a public endpoint is a silent failure
 
