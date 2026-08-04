@@ -31,7 +31,7 @@
     "tls": {}
   },
   "memoryLimit": 1073741824,
-  "minBoxVersion": "10.0.0",
+  "minBoxVersion": "9.2.0",
   "icon": "file://logo.png",
   "website": "https://epicgames.github.io/lore/",
   "documentationUrl": "https://epicgames.github.io/lore/how-to/deploy-local-lore-server/",
