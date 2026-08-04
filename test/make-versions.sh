@@ -34,7 +34,11 @@ jq -n \
   --arg iso "$ISO" \
   --argjson ts "$TS" '
   ($m[0]
-    | del(.icon)
+    # KEEP .icon as file://logo.png. Deleting it produces
+    # "Failed to get community app: 404 ... Could not resolve CloudronVersions.json
+    # from URL", an error that points at the URL and says nothing about the missing
+    # field. Verified against a published package of ours, which carries BOTH
+    # icon (file://) and iconUrl (a real URL).
     | .description = $desc
     | .changelog = $chlog
     | .postInstallMessage = $post
