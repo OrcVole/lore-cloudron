@@ -90,6 +90,38 @@ Until then, do not add a landing page or a second HTTP process to paper over the
 deliberate decision: it puts a second process in the container for cosmetic benefit, and the
 2027 client will remove the need.
 
+## Authentication: a v2 path exists, and the recon underestimated it
+
+The recon concluded that Cloudron single sign-on "does not apply" because the client-side token flow
+is Lore's own. That is too flat. Reading `lore login --help` shows a **non-interactive token path**:
+
+```
+--token-type <TOKEN_TYPE>   api-key | eg1 | lore
+--token <TOKEN>             token value for non-interactive login
+--auth-url <AUTH_URL>       e.g. ucs-auth://auth.example.com
+--no-browser
+```
+
+So the shape of a wired-up v2 is visible:
+
+- **Server side is wirable today.** `[server.auth]` takes `jwt_issuer`, `jwt_audience` and a JWKS
+  endpoint. Cloudron's OIDC addon can supply all three, which would make the server verify
+  Cloudron-issued tokens.
+- **Client side has a door but no bridge.** `--token` accepts a JWT you already hold, but nothing
+  fetches a Cloudron token on the user's behalf. A user would obtain the JWT themselves and pass it
+  in, and acceptance depends on issuer and audience matching what the server expects.
+- **Entirely untested.** Do not present this as working. It is a credible next step, not a feature.
+
+That the machine path exists at all matters for the agent-facing case: an automation can authenticate
+with `--token-type api-key --token …` and no browser, which is the property that decides whether a
+package can be driven by software.
+
+## Two instances cannot share the default ports
+
+`409 Conflicting tcp port 41337`, measured. The host port is what conflicts, so a second instance on
+the same Cloudron needs different published ports, set in the dashboard, with the client addressed
+accordingly. Both TCP and UDP must be moved together and kept on the same number as each other.
+
 ## Things that are known and unresolved
 
 - **Does `verify_client_certs = true` actually break a client?** Upstream says it requires mutual

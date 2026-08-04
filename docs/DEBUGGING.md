@@ -57,6 +57,7 @@ otherwise; that claim was withdrawn once `minBoxVersion` was corrected. See the 
 | 2 — functional flows | **PASS** | Real `lore` 0.8.6+373 client against the live server. See the evidence table below |
 | 3 — update and restore | **PASS** | See below |
 | 4 — memory | **PASS** | `memoryLimit` raised 1 GiB -> 2 GiB. See below |
+| 5 — stranger path | **PASS** | Installed from the published versions URL, not from source. Health 200 over the proxy; data plane on 41337 presenting a Let's Encrypt certificate with `Verify return code: 0 (ok)`; real `lore` client round trip exit 0; `iconUrl` and both `mediaLinks` resolving 200 |
 
 ## Gate 2 evidence: real client, real server
 
@@ -95,6 +96,36 @@ they were unnecessary.
 `lore repository gc` command; the container ships only `loreserver` and has no CLI to run it. Since
 0.8.4 the server runs incremental GC by default, so server-side GC is the realistic case and was
 plausibly active during the window, but that was not independently confirmed.
+
+## Gate 5: the stranger path, and two failures on the way to it
+
+The versions-url install failed three times before passing, and the error was identical and
+misleading every time:
+
+```
+Failed to get community app: 404 message: Could not resolve CloudronVersions.json from URL
+```
+
+It names the URL. The URL was serving **200 with valid JSON throughout**, and the rig itself could
+fetch it, proved by curling it from inside a running app container. Two real faults hid behind that
+one message:
+
+1. **`icon` was deleted from the embedded manifest.** Removed on the theory that a `file://` value
+   cannot resolve remotely. A published package of ours carries **both** `icon` (`file://logo.png`)
+   and `iconUrl` (a real URL), and our own publishing procedure says to keep it.
+2. **The top-level `"stable": true` was missing.** This was the actual blocker. The procedure
+   documents the required structure as `{"stable": true, "versions": {...}}` and it had not been
+   read before the generator was written.
+
+Both were found in one command by diffing our file against a package already working in the store,
+after two rounds of reasoning from the error text. **When a platform error names a resource that
+demonstrably works, compare against a known-good artefact rather than re-reading the message.**
+
+`test/make-versions.sh` now asserts on `stable` and exempts `icon` from the inlining check, so
+neither can regress.
+
+A third failure was not a defect: `409 Conflicting tcp port 41337`, because the throwaway instance
+still held the host port. Two instances of this package cannot share default ports.
 
 ## Verification against the shipping digest
 
