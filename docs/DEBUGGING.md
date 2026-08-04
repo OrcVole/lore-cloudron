@@ -268,9 +268,17 @@ gRPC failure: … GoAway(b"", FRAME_SIZE_ERROR, Library)      x60
 `https://` is rejected outright with "protocol https was not recognized", so the scheme list is
 validated; only `lore://`, `lores://` and `grpcs://` were accepted.
 
-**Changes must be declared before staging.** `lore stage` does not scan the filesystem. Without
-`lore dirty <path>` first, or a running `lore service`, it reports "No changes staged" and the
-commit fails with "Nothing staged for commit" while the files sit plainly in the working copy.
+**Changes must be declared before staging, and `--scan` is the idiom.** `lore stage` does not walk
+the filesystem by default; a plain `lore stage .` reports "No changes staged" and the commit then
+fails with "Nothing staged for commit" while the files sit plainly in the working copy.
+
+The round first solved this with `lore dirty . && lore stage .`, which works but is not what upstream
+recommends. `lore dirty`'s own help says it is for the case where "your editor or build tool has
+modified files and you want to inform Lore of the change without performing a full `--scan`", and
+directs bulk reconciliation to `lore status --scan` or `lore stage --scan`. **`lore stage . --scan`
+is the single-command form for ordinary work** and is what `POSTINSTALL.md` now documents. The
+harness scripts in `test/` still use the two-step form; they were written before this was read and
+are left as-is because they work and are not user-facing.
 
 ### Where content actually moves: `commit`, not `stage` and not `push`
 

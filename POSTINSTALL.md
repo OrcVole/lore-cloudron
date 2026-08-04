@@ -21,13 +21,14 @@ The health indicator beside this app in your dashboard tells you the server is u
 ```
 lore repository create lores://myapp.example.com:41337/my-project
 cd my-project
-lore dirty .          # tell Lore what changed
-lore stage .
+lore stage . --scan
 lore commit "first import"
 lore push
 ```
 
-The `lore dirty` step is worth remembering: Lore does not scan for changes by itself, so without it a commit will report nothing to do.
+**Note the `--scan`.** Lore does not walk the filesystem looking for changes by default, so a plain `lore stage .` will report nothing to do and the commit will fail. `--scan` finds your changes and stages them in one step, and is what you want whenever files were edited normally.
+
+(The separate `lore dirty` command exists for editors and build tools that already know precisely what they changed, so Lore can skip the walk. You do not need it for ordinary work.)
 
 ## Before you put real work here
 
