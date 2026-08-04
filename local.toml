@@ -1,0 +1,103 @@
+# Lore Server — Cloudron package configuration
+#
+# Layered over the defaults baked into the binary. The server loads this file because
+# LORE_ENV defaults to "local" and start.sh passes --config.
+#
+# Field names verified against upstream's server configuration reference.
+# Values validated by booting loreserver 0.8.6 against cloudron/base:5.0.0 on 2026-08-04:
+# all three ports bound, /health_check returned 200, store directories were created.
+#
+# Two things this file exists to fix. Both are silent failures.
+#
+#   1. With no configuration the local stores land under the system temporary directory,
+#      which upstream states plainly "a reboot can clear". Every path below is pinned
+#      into /app/data so it persists and is captured by Cloudron's backup.
+#
+#   2. The public gRPC endpoint defaults to requiring client certificates. It does NOT
+#      refuse to start without them, so nothing warns you: it boots, binds, passes the
+#      health check, and then rejects every ordinary client. See ADR 0001.
+
+# ---------------------------------------------------------------- stores
+# The server appends a subdirectory named for the store type, so these become
+# /app/data/store/immutable/immutable/... and /app/data/store/mutable/mutable/...
+# The doubling is the server's own doing. Do not "tidy" these paths on an existing
+# install: it orphans the data.
+
+[immutable_store]
+mode = "local"
+
+[immutable_store.local]
+path = "/app/data/store/immutable"
+
+[mutable_store]
+mode = "local"
+
+[mutable_store.local]
+path = "/app/data/store/mutable"
+# flush_delay_seconds defaults to 10; left alone until measured.
+
+[lock_store]
+mode = "local"
+# The local lock store is IN-MEMORY. Locks do not survive a restart, and the tls addon
+# restarts this app on certificate renewal. Single-node, so acceptable; stated in
+# POSTINSTALL.md so it is not discovered mid-edit.
+
+# ---------------------------------------------------------------- public QUIC (data plane)
+
+[server.quic]
+enabled = true
+host = "0.0.0.0"
+port = 41337
+# false is upstream's shipped default and is deliberate: JWT auth carries verification.
+# Written out rather than inherited because it changes behaviour silently.
+verify_client_certs = false
+
+[server.quic.certificate]
+# Staged by start.sh from the Cloudron tls addon (/etc/certs) into tmpfs, because the
+# addon material is root-owned and unreadable by the app user. Refreshed every boot.
+cert_file = "/run/lore/certs/tls_cert.pem"
+pkey_file = "/run/lore/certs/tls_key.pem"
+
+# ---------------------------------------------------------------- public gRPC (control plane)
+
+[server.grpc]
+enabled = true
+host = "0.0.0.0"
+port = 41337
+# LOAD-BEARING. The compile-time default is true, which upstream defines as
+# "Require client certificates (mutual TLS); false accepts unverified clients."
+# A stranger's lore CLI has no client certificate, so true breaks every ordinary client
+# at CONNECTION time while leaving every health check green. See ADR 0001.
+verify_client_certs = false
+
+[server.grpc.certificate]
+cert_file = "/run/lore/certs/tls_cert.pem"
+pkey_file = "/run/lore/certs/tls_key.pem"
+
+# No cert_chain on either endpoint: it is the CA bundle used to verify CLIENT
+# certificates, and neither endpoint verifies them.
+
+# ---------------------------------------------------------------- HTTP (health only)
+
+[server.http]
+enabled = true
+host = "0.0.0.0"
+port = 41339
+# Serves /health_check (200, empty body) and optionally presigned URLs.
+# This is the manifest httpPort and healthCheckPath. No certificate block:
+# Cloudron's nginx terminates TLS for httpPort.
+
+# ---------------------------------------------------------------- internal endpoints
+# quic_internal (41340) and grpc_internal are disabled by default, require mutual TLS,
+# and enforce the cert_chain requirement AT STARTUP (unlike the public endpoints).
+# Single-node has no use for replication. Leave them off.
+
+# ---------------------------------------------------------------- auth
+# Out of scope for v1. JWT against a JWKS endpoint; the client-side token flow is Lore's
+# own, so Cloudron SSO does not apply. The data plane therefore ships UNAUTHENTICATED --
+# see POSTINSTALL.md for the two hardening paths.
+# [server.auth]
+# jwt_issuer = ""
+# jwt_audience = ""
+# [server.auth.jwk]
+# endpoint = ""

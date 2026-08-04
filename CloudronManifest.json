@@ -1,0 +1,50 @@
+{
+  "manifestVersion": 2,
+  "id": "io.github.orcvole.lore",
+  "title": "Lore Server",
+  "author": "Epic Games",
+  "description": "file://DESCRIPTION.md",
+  "changelog": "file://CHANGELOG.md",
+  "tagline": "Version control for very large binary assets",
+  "version": "0.1.0",
+  "upstreamVersion": "0.8.6",
+  "healthCheckPath": "/health_check",
+  "httpPort": 41339,
+  "tcpPorts": {
+    "LORE_GRPC_PORT": {
+      "title": "Lore gRPC (TCP)",
+      "description": "gRPC over TCP for Lore clients: push, clone, admin and repository operations. Keep this on the same number as the QUIC port below, because a client is configured with one endpoint address for both transports.",
+      "defaultValue": 41337,
+      "containerPort": 41337
+    }
+  },
+  "udpPorts": {
+    "LORE_QUIC_PORT": {
+      "title": "Lore QUIC (UDP)",
+      "description": "QUIC over UDP for Lore clients: the high-performance data plane. Keep this on the same number as the gRPC port above.",
+      "defaultValue": 41337,
+      "containerPort": 41337
+    }
+  },
+  "addons": {
+    "localstorage": {},
+    "tls": {}
+  },
+  "memoryLimit": 1073741824,
+  "minBoxVersion": "10.0.0",
+  "icon": "file://logo.png",
+  "website": "https://epicgames.github.io/lore/",
+  "documentationUrl": "https://epicgames.github.io/lore/how-to/deploy-local-lore-server/",
+  "contactEmail": "Most+github@OrcadianVole.com",
+  "packagerName": "OrcVole",
+  "packagerUrl": "https://github.com/OrcVole/lore-cloudron",
+  "postInstallMessage": "file://POSTINSTALL.md",
+  "tags": [
+    "version-control",
+    "vcs",
+    "developer",
+    "git",
+    "assets",
+    "rust"
+  ]
+}

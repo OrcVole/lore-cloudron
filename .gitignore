@@ -1,0 +1,17 @@
+# Local working record, box specifics, unanonymised notes.
+phase-notes/
+*-foundation.md
+RETROSPECTIVE.md
+HARVEST.md
+.anonymize-list
+
+# Credentials, never committed.
+.env
+*.pem
+*.key
+*.crt
+credentials/
+
+# Build scratch.
+*.tar.gz
+loreserver
