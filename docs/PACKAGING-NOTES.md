@@ -42,7 +42,7 @@ that was inferred stays labelled inferred no matter how many documents repeat it
 
 | Claim | Why it is not verified |
 | --- | --- |
-| `verify_client_certs = true` on the public gRPC endpoint breaks ordinary clients | Upstream's reference says it requires mutual TLS, but an `openssl s_client` probe against that configuration completed a TLS 1.3 handshake and saw no client-certificate request. May enforce, may be a no-op without a `cert_chain`, may defer past the handshake. **Needs a real `lore` client. Deferred to gate 2.** Shipping `false` does not depend on the answer. |
+| `verify_client_certs = true` on the public gRPC endpoint breaks ordinary clients | Still unverified, and now deliberately so. Gate 2 verified the **shipped** setting (`false`) end to end with a real client. Proving what `true` does would mean reconfiguring the live install to test a setting we do not ship. Left as an open question **for upstream**, asked in `FOR-UPSTREAM.md`, not as a package gap |
 | The local lock store does not survive a restart | Documented as in-memory; not yet observed across a restart |
 | `lore repository gc` may churn directories during a live backup | Not yet exercised. This is the ClickHouse `tmp_merge` failure class and can abort a whole server's backup run, so it is gate 3 work |
 

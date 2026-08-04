@@ -110,6 +110,20 @@ true` and record whether it is refused. That settles whether this is a severe tr
 no-op, and the answer belongs in `docs/FOR-UPSTREAM.md` either way, because the documentation says
 "require" and the observed handshake does not.
 
+### Gate 2 outcome, 2026-08-04
+
+**The shipped setting is verified end to end.** A real `lore` 0.8.6+373 client, presenting no
+certificate and holding no credentials, connected to the live install over `lores://`, and
+completed a full push and fresh clone of a 23-file, 31.44 MiB media corpus with every file
+byte-identical. The trace shows the client finding no token map and proceeding anyway. There is
+nothing inferred left in the decision this ADR actually makes.
+
+**The alternative remains untested and is deliberately left that way.** Establishing whether
+`verify_client_certs = true` refuses a real client would mean reconfiguring and restarting the live
+install to prove a property of a setting we do not ship and would never ship. The question is
+upstream's to answer about their own documentation, and it is asked in `docs/FOR-UPSTREAM.md` with
+the evidence we do have. Recorded as an open upstream question rather than a package gap.
+
 ## Consequences
 
 **Good.** A stranger's client trusts the server with no configuration, because the certificate is a

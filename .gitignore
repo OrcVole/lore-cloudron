@@ -15,3 +15,10 @@ credentials/
 # Build scratch.
 *.tar.gz
 loreserver
+
+# Generated media test corpus (test/make-corpus.sh recreates it).
+corpus/
+
+# The lore CLI creates a repository in the current directory.
+# Guard against a stray one being committed; see docs/DEBUGGING.md.
+.lore/

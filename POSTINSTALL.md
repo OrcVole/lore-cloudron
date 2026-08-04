@@ -16,11 +16,40 @@ The gRPC (TCP) and QUIC (UDP) endpoints must be published on the **same** port n
 
 Cloudron lets you change each one independently in the dashboard, and nothing will warn you if they drift apart. If you move one, move the other.
 
-### 3. Connecting a client
+### 3. Connecting a client: use `lores://`, not `lore://`
 
-Install the `lore` CLI from the upstream release page, then point it at this server on the port you published, for example `myapp.example.com:41337`.
+Install the `lore` CLI from the upstream release page, then point it at this server using the **`lores://`** scheme:
+
+```
+lore repository list lores://myapp.example.com:41337
+lore clone lores://myapp.example.com:41337/myrepo
+```
+
+**This matters more than it looks.** `lore://` is the plaintext scheme and `lores://` is the TLS one. This server terminates TLS on 41337, as it must to present a trusted certificate, so a client using `lore://` never connects.
+
+It does not fail cleanly either. The client reads the TLS handshake as a malformed HTTP/2 frame and retries in a loop, so the symptom is a command that **hangs indefinitely** and, with `--log-level trace`, repeats:
+
+```
+gRPC connecting: http://myapp.example.com:41337/
+gRPC failure: ... GoAway(b"", FRAME_SIZE_ERROR, Library)
+```
+
+If a client hangs on connect, check the scheme first. Verified against this package on 2026-08-04.
 
 You do not need to configure certificate trust. The server presents the certificate Cloudron manages for this application's own domain, and it is renewed automatically.
+
+### 3a. Changes must be declared before they are staged
+
+Lore does not scan the working copy for changes. Either run a `lore service` process to watch the filesystem, or mark changed paths yourself:
+
+```
+lore dirty .          # then
+lore stage .
+lore commit "your message"
+lore push
+```
+
+Without the `dirty` step, `lore stage` reports "No changes staged" and the commit fails with "Nothing staged for commit", even though the files are plainly there. Note also that the commit message is a positional argument, not `-m`.
 
 ### 4. Two behaviours worth knowing
 
