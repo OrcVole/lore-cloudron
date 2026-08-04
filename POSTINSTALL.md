@@ -1,104 +1,48 @@
-## The Open button will show a 404, and that is expected
+## Your Lore server is running
 
-Lore has no web interface. The HTTP port exists only so Cloudron can health-check the app, and it serves exactly one path, `/health_check`. Opening this app from the dashboard therefore returns an empty **404**. Nothing is broken.
-
-Everything is done through the `lore` command-line client, over port 41337.
-
-Upstream's roadmap commits to a **web client in 2027**, with a VS Code plugin in progress before that. When that lands this package will gain a real interface.
-
-## So how do I check it is actually working?
-
-Three checks, weakest to strongest. **Only the third one proves your clients can reach the server.**
-
-**1. The dashboard health indicator.** If this app shows as healthy, the server process is running and answering. This is Cloudron polling `/health_check` for you.
-
-**2. In a browser or with curl:**
-
-```
-curl -i https://myapp.example.com/health_check
-```
-
-A `200` means the server is up. In a browser you will see a **blank page**, because the response is deliberately empty. Blank is a pass here; the 404 you get from `/` is not.
-
-**3. The one that matters, from a machine with the `lore` client:**
+Check it in one command, from any machine with the [`lore` client](https://github.com/EpicGames/lore/releases) installed:
 
 ```
 lore repository list lores://myapp.example.com:41337
 ```
 
-An empty list and a zero exit code means everything works: the port is reachable, TLS is presenting a valid certificate, and the data plane is answering. Any repositories you have created will be listed.
+An empty list and no error means everything is working: the port is open, the certificate is valid, and the server is ready for your first repository. Cloudron issues and renews that certificate for you, so there is nothing to configure at either end.
 
-### Why the third check is the only real one
+**Note the `lores://` scheme, with the `s`.** It is the secure one, and the one this server uses. Plain `lore://` will appear to hang rather than give you an error.
 
-**Checks 1 and 2 only test the HTTP port, which is not the port your clients use.** Lore's actual work happens on **41337**, published separately as a TCP and a UDP port, and Cloudron does not health-check those.
+## There is no web interface, by design
 
-So this app can show a healthy green indicator while no client can connect at all, for instance if the TCP or UDP port is blocked by a firewall between you and the server, or if the two ports have been set to different numbers in the dashboard. If check 3 fails while checks 1 and 2 pass, the server is fine and the problem is the network path to 41337.
+Lore is driven entirely by the `lore` client, so this app has no page to visit and the dashboard's **Open** button will show a 404. That is expected, not a fault. Upstream has committed to a web client in 2027.
 
-### If check 3 hangs rather than failing
+The health indicator beside this app in your dashboard tells you the server is up.
 
-Use `lores://`, not `lore://`. See the connection section below: `lore://` is the plaintext scheme, and against this server it retries forever instead of reporting an error.
-
-## Read this before you push anything
-
-### 1. The data plane is unauthenticated by default
-
-Lore's authentication is optional JWT verification against a JWKS endpoint, and it is switched off in every configuration upstream ships. This package does not change that. **Anyone who can reach port 41337 can read and write every repository on this server.**
-
-There are two ways to harden it, and you should pick one before putting real work here:
-
-**Configure JWT authentication.** Edit `/app/data/config/local.toml` through the dashboard file manager, uncomment the `[server.auth]` block, and point it at your identity provider's issuer, audience and JWKS endpoint. Restart the application afterwards. Note that the client-side token flow is Lore's own, so this is not Cloudron single sign-on and your users will not log in through the Cloudron dashboard.
-
-**Or close the ports.** If this server only needs to be reachable from inside your own network, turn off the TCP and UDP port forwarding for this app in the Cloudron dashboard and reach it another way, such as over your VPN.
-
-**`lore login` will return `NotSupported`, code 18, and that is correct.** Since Lore 0.8.6, `login` and `info` return `NotSupported` rather than a generic error when the server has no auth endpoint configured. This server has none until you configure one, so code 18 means "authentication is switched off here", not "something is broken". Scripts that branch on these codes need updating for 0.8.6 generally.
-
-### 2. Keep both port numbers the same
-
-The gRPC (TCP) and QUIC (UDP) endpoints must be published on the **same** port number. Clients are configured with a single address and expect to find both transports there.
-
-Cloudron lets you change each one independently in the dashboard, and nothing will warn you if they drift apart. If you move one, move the other.
-
-### 3. Connecting a client: use `lores://`, not `lore://`
-
-Install the `lore` CLI from the upstream release page, then point it at this server using the **`lores://`** scheme:
+## Your first repository
 
 ```
-lore repository list lores://myapp.example.com:41337
-lore clone lores://myapp.example.com:41337/myrepo
-```
-
-**This matters more than it looks.** `lore://` is the plaintext scheme and `lores://` is the TLS one. This server terminates TLS on 41337, as it must to present a trusted certificate, so a client using `lore://` never connects.
-
-It does not fail cleanly either. The client reads the TLS handshake as a malformed HTTP/2 frame and retries in a loop, so the symptom is a command that **hangs indefinitely** and, with `--log-level trace`, repeats:
-
-```
-gRPC connecting: http://myapp.example.com:41337/
-gRPC failure: ... GoAway(b"", FRAME_SIZE_ERROR, Library)
-```
-
-If a client hangs on connect, check the scheme first. Verified against this package on 2026-08-04.
-
-You do not need to configure certificate trust. The server presents the certificate Cloudron manages for this application's own domain, and it is renewed automatically.
-
-### 3a. Changes must be declared before they are staged
-
-Lore does not scan the working copy for changes. Either run a `lore service` process to watch the filesystem, or mark changed paths yourself:
-
-```
-lore dirty .          # then
+lore repository create lores://myapp.example.com:41337/my-project
+cd my-project
+lore dirty .          # tell Lore what changed
 lore stage .
-lore commit "your message"
+lore commit "first import"
 lore push
 ```
 
-Without the `dirty` step, `lore stage` reports "No changes staged" and the commit fails with "Nothing staged for commit", even though the files are plainly there. Note also that the commit message is a positional argument, not `-m`.
+The `lore dirty` step is worth remembering: Lore does not scan for changes by itself, so without it a commit will report nothing to do.
 
-### 4. Two behaviours worth knowing
+## Before you put real work here
 
-**Certificate renewal restarts the application.** That is how Cloudron's TLS integration works, and it is what keeps the certificate valid. Lore's lock store is held in memory, so every lock is released at that moment and any push in flight has to be retried. On a single-node install this is a brief interruption rather than a correctness problem, but it is not nothing if you are mid-operation.
+**The server currently accepts any client that can reach it.** Lore ships with authentication switched off, and this package does not invent credentials for you.
 
-**Do not edit the store paths.** `/app/data/config/local.toml` pins the immutable and mutable stores inside the application's data directory. If those paths are removed, Lore falls back to writing into the system temporary directory, which a reboot can clear and which Cloudron does not back up. The application logs a loud warning at start-up if it detects this, but by then you have already changed it.
+**For most people the simplest answer is to close the ports.** If your team reaches this server over a VPN or from inside your own network, turn off the TCP and UDP port forwarding for this app in the dashboard. It stays fully usable, and nothing on the public internet can touch it.
 
-### 5. Backups
+If you need it reachable from anywhere, configure JWT authentication instead: edit `/app/data/config/local.toml` through the dashboard file manager, fill in the `[server.auth]` block for your identity provider, and restart the app. This is Lore's own token system rather than Cloudron single sign-on, so your users will not log in through the dashboard.
 
-Everything Lore persists lives under the application's data directory, so ordinary Cloudron backups capture it. For an independent copy in a format that does not depend on Lore's on-disk layout, `lore repository clone` reconstructs a repository over the wire, and `lore repository verify state` and `lore repository verify fragment` check integrity.
+## Two things worth knowing
+
+**Keep both port numbers the same.** The TCP and UDP ports must match, because clients use one address for both. The dashboard lets you change them independently and will not warn you.
+
+**Your data is backed up normally.** Everything Lore stores lives in the app's data directory, so Cloudron's backups cover it, and a restore brings it all back. Verified, including a restore that rolled the server back cleanly.
+
+---
+
+Full documentation, including the version-bump procedure and notes for administrators, is in the [package repository](https://github.com/OrcVole/lore-cloudron).

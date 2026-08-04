@@ -45,10 +45,17 @@ jq -n \
     | .iconUrl = ($raw + "/logo.png")
     | .mediaLinks = [ ($raw + "/media-corpus.png"), ($raw + "/media-terminal.png") ]
   ) as $man
-  | { versions: { ($ver): { manifest: $man, creationDate: $iso, ts: $ts, publishState: "published" } } }
+  # "stable": true is REQUIRED at the top level. Without it the install fails with
+  # "Failed to get community app: 404 ... Could not resolve CloudronVersions.json from
+  # URL", which blames the URL while the URL is serving 200 with valid JSON.
+  | { stable: true, versions: { ($ver): { manifest: $man, creationDate: $iso, ts: $ts, publishState: "published" } } }
 ' > CloudronVersions.json
 
 echo "wrote CloudronVersions.json for $VER"
+
+echo "== pre-flight: top-level stable flag present =="
+jq -e '.stable == true' CloudronVersions.json >/dev/null \
+  && echo "  ok: stable=true" || { echo "  FAIL: top-level \"stable\": true is required"; exit 1; }
 
 echo "== pre-flight: every entry must have all four fields, ts a NUMBER =="
 jq -e '.versions | to_entries[]
@@ -67,9 +74,16 @@ done
 n=$(jq -r ".versions[\"$VER\"].manifest.mediaLinks | length" CloudronVersions.json)
 [ "$n" -ge 1 ] && echo "  ok   mediaLinks         $n entr(y/ies)" || { echo "  FAIL mediaLinks empty"; exit 1; }
 
-echo "== pre-flight: no file:// survived into the embedded manifest =="
-jq -r ".versions[\"$VER\"].manifest | to_entries[] | select(.value|type==\"string\") | select(.value|startswith(\"file://\")) | .key" CloudronVersions.json \
-  | grep . && { echo "  FAIL: file:// references cannot resolve remotely"; exit 1; } || echo "  ok: none"
+echo "== pre-flight: no UNEXPECTED file:// in the embedded manifest =="
+# `icon` is legitimately file://logo.png and must stay; a published package of ours
+# carries both it and iconUrl. Only the text fields have to be inlined, because those
+# are what the versions channel actually has to render remotely.
+jq -r ".versions[\"$VER\"].manifest | to_entries[]
+       | select(.key != \"icon\")
+       | select(.value|type==\"string\")
+       | select(.value|startswith(\"file://\")) | .key" CloudronVersions.json \
+  | grep . && { echo "  FAIL: the fields above must be inlined, not file:// referenced"; exit 1; } \
+  || echo "  ok: only icon uses file://, which is correct"
 
 echo "== pre-flight: changelog is in bracket format, not markdown headings =="
 head -1 CHANGELOG.md | grep -qE '^\[' && echo "  ok: $(head -1 CHANGELOG.md)" || { echo "  FAIL: changelog must start [x.y.z]"; exit 1; }
