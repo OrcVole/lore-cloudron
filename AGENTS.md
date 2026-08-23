@@ -13,7 +13,7 @@ for very large binary assets. Headless: no web interface, driven by the `lore` C
 | --- | --- |
 | Manifest id | `io.github.orcvole.lore` |
 | Image | `ghcr.io/orcvole/lore-cloudron`, tagged `<upstreamVersion>-<pkg-rev>` |
-| Upstream | https://github.com/EpicGames/lore, MIT |
+| Upstream | <https://github.com/EpicGames/lore>, MIT |
 | Base | `cloudron/base:5.0.0` pinned by digest |
 | Architecture | `linux/amd64` only |
 

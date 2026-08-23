@@ -10,7 +10,7 @@ command-line client and the language SDKs. Upstream's roadmap lists a web client
 
 | | |
 | --- | --- |
-| Upstream | https://github.com/EpicGames/lore |
+| Upstream | <https://github.com/EpicGames/lore> |
 | Upstream version packaged | 0.8.6 |
 | Package version | 0.1.0 |
 | Licence | MIT, both upstream and this packaging |
