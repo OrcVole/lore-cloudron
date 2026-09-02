@@ -11,9 +11,9 @@
 
 FROM cloudron/base:5.0.0@sha256:04fd70dbd8ad6149c19de39e35718e024417c3e01dc9c6637eaf4a41ec4e596c AS fetch
 
-ARG LORE_VERSION=0.8.6
+ARG LORE_VERSION=0.9.0
 # sha256 of loreserver-v0.8.6-x86_64-unknown-linux-gnu.tar.gz, 15,908,281 bytes.
-ARG LORE_SHA256=f0de84c6175a476f157754f57316be0346105be502c93fabb65bb908eab0e1e1
+ARG LORE_SHA256=d30324ce10f5498a749e6dea65100d01103474a5373cb5db0f270831c967a1d7
 
 # Pin the exact filename. The debug asset (lore-debug-...) is 353 MB and sorts adjacent
 # to the 15 MB one wanted here, and the CLI asset (lore-...) sorts adjacent too.
