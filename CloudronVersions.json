@@ -122,6 +122,67 @@
             "creationDate": "Wed, 02 Sep 2026 21:22:19 GMT",
             "ts": 1788384139000,
             "publishState": "published"
+        },
+        "0.2.1": {
+            "manifest": {
+                "manifestVersion": 2,
+                "id": "io.github.orcvole.lore",
+                "title": "Lore Server",
+                "author": "Epic Games",
+                "description": "<upstream>0.10.0</upstream>\n\nLore is a centralised, content-addressed version control system built by Epic Games for very large binary assets: the kind of files that make ordinary version control fall over. It is written in Rust, MIT licensed, and designed for teams working with game and entertainment content measured in gigabytes rather than kilobytes.\n\n### This is a headless server\n\nLore has no web interface, and this package does not pretend otherwise. The server is driven entirely by the `lore` command-line client and the language SDKs. If you are looking for something to click around in, this is not it. What you get is a fast, authenticated-optional data plane that a machine can drive.\n\nThat is the correct shape for this kind of service rather than a shortcoming. Upstream's roadmap does list a web client as committed for 2027, with a VS Code plugin in progress before that, so a browser surface is coming; it simply is not here yet.\n\n### How clients reach it\n\nTwo public endpoints share port 41337, one over TCP and one over UDP, because they are different protocols:\n\n- **QUIC over UDP 41337** is the high-performance data plane, used for pushing and cloning content.\n- **gRPC over TCP 41337** is the full service API: administration, storage, revisions, repositories, environments, locks and notifications.\n\nBoth terminate their own TLS using the certificate Cloudron manages for this application, so an ordinary `lore` client trusts the server with no manual configuration and no certificate wrangling.\n\nA third port, HTTP 41339, serves only a health check and is what the Cloudron dashboard talks to.\n\n### What it stores, and where\n\nContent is addressed by BLAKE3 hash and compressed with Zstandard. The package pins all three stores (immutable content fragments, mutable branch pointers, and locks) inside the application's data directory, so everything is captured by Cloudron's backups. This matters more than it sounds: left unconfigured, Lore writes its stores into the system temporary directory, which a reboot can clear.\n\n### Before you install\n\n**The data plane ships without authentication.** Lore supports JWT verification against a JWKS endpoint, but it is disabled in every configuration upstream ships, and this package does not invent credentials for you. Anyone who can reach port 41337 can read and write your repositories. Read the post-installation notes before exposing this to an untrusted network.\n\nLore is pre-1.0. Upstream commits that content you commit now stays readable by every future release, so your history is not at risk, but APIs and protocols can still change before 1.0.",
+                "changelog": "- Upstream EpicGames/lore 0.9.0 to 0.10.0.\n- Client-facing breaking change: partial-hash revision identifiers are refused as `NotSupported`. Name revisions by their full 64-character hash, `[branch]@<number>`, `[branch]@LATEST` or `<branch>@<hash>`\n- Renamed setting: `connection_message_limit` under `[server.quic]` and `[server.quic_internal]` is now `stream_message_limit` and applies per stream. This package does not set it; if you set it in your own configuration, rename it or it is silently ignored\n- Auth: authorisation moves to OIDC and OAuth 2.0; `[server.auth]` gains new fields (permission_claim, resource_claim, identity_claim, resource_id_template, resource_wildcard, baseline_access) with `jwt_issuer` now accepting a list. Opt-in only, no action required if auth is not configured\n- Config: `lock_service.max_encoding_message_size` moves under `[server.grpc_public_services.lock_service.general]`. No action needed as our local.toml does not customise this key\n- Storage: Oodle is refused for new fragments; existing Oodle content still reads with lazy re-encoding to Zstd\n- New settings with sensible defaults: `permit_timeout_ms` (default 100ms) under `[server.quic]` and `[server.quic_internal]`, and `connection_inflight_limit`\n- Base image cloudron/base 5.0.0 to 5.1.0: the Ubuntu 24.04.4 point release, with its OS security\n  updates. Same Ubuntu 24.04 release and glibc 2.39.\n",
+                "tagline": "Version control for very large binary assets",
+                "version": "0.2.1",
+                "upstreamVersion": "0.10.0",
+                "healthCheckPath": "/health_check",
+                "httpPort": 41339,
+                "tcpPorts": {
+                    "LORE_GRPC_PORT": {
+                        "title": "Lore gRPC (TCP)",
+                        "description": "gRPC over TCP for Lore clients: push, clone, admin and repository operations. Keep this on the same number as the QUIC port below, because a client is configured with one endpoint address for both transports.",
+                        "defaultValue": 41337,
+                        "containerPort": 41337
+                    }
+                },
+                "udpPorts": {
+                    "LORE_QUIC_PORT": {
+                        "title": "Lore QUIC (UDP)",
+                        "description": "QUIC over UDP for Lore clients: the high-performance data plane. Keep this on the same number as the gRPC port above.",
+                        "defaultValue": 41337,
+                        "containerPort": 41337
+                    }
+                },
+                "addons": {
+                    "localstorage": {},
+                    "tls": {}
+                },
+                "memoryLimit": 2147483648,
+                "minBoxVersion": "9.2.0",
+                "icon": "file://logo.png",
+                "iconUrl": "https://raw.githubusercontent.com/OrcVole/lore-cloudron/main/logo.png",
+                "mediaLinks": [
+                    "https://raw.githubusercontent.com/OrcVole/lore-cloudron/main/media-corpus.png",
+                    "https://raw.githubusercontent.com/OrcVole/lore-cloudron/main/media-terminal.png"
+                ],
+                "website": "https://epicgames.github.io/lore/",
+                "documentationUrl": "https://epicgames.github.io/lore/how-to/deploy-local-lore-server/",
+                "contactEmail": "Most+github@OrcadianVole.com",
+                "packagerName": "OrcVole",
+                "packagerUrl": "https://github.com/OrcVole/lore-cloudron",
+                "postInstallMessage": "## Your Lore server is running\n\nCheck it in one command, from any machine with the [`lore` client](https://github.com/EpicGames/lore/releases) installed:\n\n```text\nlore repository list lores://myapp.example.com:41337\n```\n\nAn empty list and no error means everything is working: the port is open, the certificate is valid, and the server is ready for your first repository. Cloudron issues and renews that certificate for you, so there is nothing to configure at either end.\n\n**Note the `lores://` scheme, with the `s`.** It is the secure one, and the one this server uses. Plain `lore://` will appear to hang rather than give you an error.\n\n## There is no web interface, by design\n\nLore is driven entirely by the `lore` client, so this app has no page to visit and the dashboard's **Open** button will show a 404. That is expected, not a fault. Upstream has committed to a web client in 2027.\n\nThe health indicator beside this app in your dashboard tells you the server is up.\n\n## Your first repository\n\n```bash\nlore repository create lores://myapp.example.com:41337/my-project\ncd my-project\nlore stage . --scan\nlore commit \"first import\"\nlore push\n```\n\n**Note the `--scan`.** Lore does not walk the filesystem looking for changes by default, so a plain `lore stage .` will report nothing to do and the commit will fail. `--scan` finds your changes and stages them in one step, and is what you want whenever files were edited normally.\n\n(The separate `lore dirty` command exists for editors and build tools that already know precisely what they changed, so Lore can skip the walk. You do not need it for ordinary work.)\n\n## Before you put real work here\n\n**The server currently accepts any client that can reach it.** Lore ships with authentication switched off, and this package does not invent credentials for you.\n\n**For most people the simplest answer is to close the ports.** If your team reaches this server over a VPN or from inside your own network, turn off the TCP and UDP port forwarding for this app in the dashboard. It stays fully usable, and nothing on the public internet can touch it.\n\nIf you need it reachable from anywhere, configure JWT authentication instead: edit `/app/data/config/local.toml` through the dashboard file manager, fill in the `[server.auth]` block for your identity provider, and restart the app. This is Lore's own token system rather than Cloudron single sign-on, so your users will not log in through the dashboard.\n\n## Two things worth knowing\n\n**Keep both port numbers the same.** The TCP and UDP ports must match, because clients use one address for both. The dashboard lets you change them independently and will not warn you.\n\n**Your data is backed up normally.** Everything Lore stores lives in the app's data directory, so Cloudron's backups cover it, and a restore brings it all back. Verified, including a restore that rolled the server back cleanly.\n\n---\n\nFull documentation, including the version-bump procedure and notes for administrators, is in the [package repository](https://github.com/OrcVole/lore-cloudron).\n",
+                "tags": [
+                    "version-control",
+                    "vcs",
+                    "developer",
+                    "git",
+                    "assets",
+                    "rust"
+                ],
+                "dockerImage": "ghcr.io/orcvole/lore-cloudron@sha256:a9030907b65733bea650b168318778e8ff8b72f6240834f4a09e64b1150fb01c"
+            },
+            "creationDate": "Wed, 23 Sep 2026 20:46:41 GMT",
+            "ts": 1790196401000,
+            "publishState": "published"
         }
     }
 }
