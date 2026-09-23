@@ -1,3 +1,12 @@
+[0.2.1]
+
+- Update lore-server 0.9.0 -> 0.10.0
+- Auth: authorisation moves to OIDC and OAuth 2.0; `[server.auth]` gains new fields (permission_claim, resource_claim, identity_claim, resource_id_template, resource_wildcard, baseline_access) with jwt_issuer now accepting a list. Opt-in only, no action required if auth is not configured
+- Config: `lock_service.max_encoding_message_size` moves under `[server.grpc_public_services.lock_service.general]`. No action needed as our local.toml does not customise this key
+- Storage: Oodle is refused for new fragments; existing Oodle content still reads with lazy re-encoding to Zstd
+- New settings: `permit_timeout_ms` (default 100ms) under `[server.quic]` and `[server.quic_internal]`, and `connection_inflight_limit`. Both have sensible defaults
+- No packaging changes: auth topology, workspace layout and secrets handling unchanged; base and built images digest-pinned
+
 [0.2.0]
 
 - Update lore-server 0.8.6 -> 0.9.0

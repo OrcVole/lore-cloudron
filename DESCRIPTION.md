@@ -1,4 +1,4 @@
-`<upstream>0.9.0</upstream>
+`<upstream>0.10.0</upstream>
 
 Lore is a centralised, content-addressed version control system built by Epic Games for very large binary assets: the kind of files that make ordinary version control fall over. It is written in Rust, MIT licensed, and designed for teams working with game and entertainment content measured in gigabytes rather than kilobytes.
 
