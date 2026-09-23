@@ -9,7 +9,7 @@
 # linux/amd64 only. The aarch64 Linux asset is built for Graviton3 with SVE
 # (...-neoverse-512tvb...) and is not a general arm64 build.
 
-FROM cloudron/base:5.0.0@sha256:04fd70dbd8ad6149c19de39e35718e024417c3e01dc9c6637eaf4a41ec4e596c AS fetch
+FROM cloudron/base:5.1.0@sha256:1c0666c9abe9e2090d33686826d4e97769b799124573118d41e0d7485135748e AS fetch
 
 ARG LORE_VERSION=0.10.0
 # sha256 of loreserver-v0.10.0-x86_64-unknown-linux-gnu.tar.gz, 15,908,281 bytes.
@@ -25,7 +25,7 @@ RUN mkdir -p /build && cd /build \
     && chmod +x loreserver \
     && ./loreserver --version
 
-FROM cloudron/base:5.0.0@sha256:04fd70dbd8ad6149c19de39e35718e024417c3e01dc9c6637eaf4a41ec4e596c
+FROM cloudron/base:5.1.0@sha256:1c0666c9abe9e2090d33686826d4e97769b799124573118d41e0d7485135748e
 
 # TRAP: the release tarball ships loreserver as rw-r--r--, with no exec bit. Running it
 # without chmod fails with "Permission denied", which misreads as a mount or security

@@ -1,13 +1,15 @@
 [0.2.1]
 
-- Update lore-server 0.9.0 -> 0.10.0
-- Client-facing breaking change: partial-hash revision identifiers are now refused as `NotSupported`. Name revisions by their full 64-character hash, `[branch]@<number>`, `[branch]@LATEST` or `<branch>@<hash>`
-- Renamed setting: `connection_message_limit` under `[server.quic]` / `[server.quic_internal]` is now `stream_message_limit` and applies per stream. This package does not set it; if you set it in your own configuration, rename it or it is silently ignored
-- Auth: authorisation moves to OIDC and OAuth 2.0; `[server.auth]` gains new fields (permission_claim, resource_claim, identity_claim, resource_id_template, resource_wildcard, baseline_access) with jwt_issuer now accepting a list. Opt-in only, no action required if auth is not configured
+- Upstream EpicGames/lore 0.9.0 to 0.10.0.
+
+- Client-facing breaking change: partial-hash revision identifiers are refused as `NotSupported`. Name revisions by their full 64-character hash, `[branch]@<number>`, `[branch]@LATEST` or `<branch>@<hash>`
+- Renamed setting: `connection_message_limit` under `[server.quic]` and `[server.quic_internal]` is now `stream_message_limit` and applies per stream. This package does not set it; if you set it in your own configuration, rename it or it is silently ignored
+- Auth: authorisation moves to OIDC and OAuth 2.0; `[server.auth]` gains new fields (permission_claim, resource_claim, identity_claim, resource_id_template, resource_wildcard, baseline_access) with `jwt_issuer` now accepting a list. Opt-in only, no action required if auth is not configured
 - Config: `lock_service.max_encoding_message_size` moves under `[server.grpc_public_services.lock_service.general]`. No action needed as our local.toml does not customise this key
 - Storage: Oodle is refused for new fragments; existing Oodle content still reads with lazy re-encoding to Zstd
-- New settings: `permit_timeout_ms` (default 100ms) under `[server.quic]` and `[server.quic_internal]`, and `connection_inflight_limit`. Both have sensible defaults
-- No packaging changes: auth topology, workspace layout and secrets handling unchanged; base and built images digest-pinned
+- New settings with sensible defaults: `permit_timeout_ms` (default 100ms) under `[server.quic]` and `[server.quic_internal]`, and `connection_inflight_limit`
+- Base image cloudron/base 5.0.0 to 5.1.0: the Ubuntu 24.04.4 point release, with its OS security
+  updates. Same Ubuntu 24.04 release and glibc 2.39.
 
 [0.2.0]
 

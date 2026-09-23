@@ -95,7 +95,7 @@ deliberate decision: it puts a second process in the container for cosmetic bene
 The recon concluded that Cloudron single sign-on "does not apply" because the client-side token flow
 is Lore's own. That is too flat. Reading `lore login --help` shows a **non-interactive token path**:
 
-```
+```text
 --token-type <TOKEN_TYPE>   api-key | eg1 | lore
 --token <TOKEN>             token value for non-interactive login
 --auth-url <AUTH_URL>       e.g. ucs-auth://auth.example.com

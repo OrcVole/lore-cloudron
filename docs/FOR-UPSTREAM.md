@@ -13,13 +13,13 @@ with glibc 2.39.
 
 Extracting the archive produces:
 
-```
+```text
 -rw-r--r--  loreserver
 ```
 
 so the obvious next step fails:
 
-```
+```bash
 $ ./loreserver --version
 bash: ./loreserver: Permission denied
 ```
@@ -100,7 +100,7 @@ but documentation is read after the confusion, not before.
 line naming the product and version, and pointing at the client documentation, would do. Something
 like:
 
-```
+```text
 Lore Server 0.8.6 — this is a machine-facing endpoint.
 Connect with the lore CLI: lores://<host>:41337
 Docs: https://epicgames.github.io/lore/

@@ -101,7 +101,7 @@ The binary is fetched from the pinned upstream release and checked against a rec
 compiled. Upstream's own server Dockerfile compiles from source and wants several gigabytes of RAM;
 the released binary links cleanly against `cloudron/base` with no additional packages.
 
-```
+```bash
 cloudron build
 ```
 

@@ -152,7 +152,7 @@ which the foundation document asserted. Both are settled at gate 0, not here.
 A `lore` 0.8.6 client was pointed at a local container presenting a self-signed certificate whose
 SAN included `localhost` and `127.0.0.1`. It refused:
 
-```
+```text
 [Error] Disconnected from server
   at lore-transport/src/grpc/mod.rs:588:24
 exit=6

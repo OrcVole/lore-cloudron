@@ -49,5 +49,5 @@
     "assets",
     "rust"
   ],
-  "dockerImage": "ghcr.io/orcvole/lore-cloudron@sha256:d0aa6a4efc9f658269a6f780822dcb3379b0bf026b5f57dfb2a21a2759f1b9cf"
+  "dockerImage": "ghcr.io/orcvole/lore-cloudron@sha256:a9030907b65733bea650b168318778e8ff8b72f6240834f4a09e64b1150fb01c"
 }

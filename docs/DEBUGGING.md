@@ -102,7 +102,7 @@ plausibly active during the window, but that was not independently confirmed.
 The versions-url install failed three times before passing, and the error was identical and
 misleading every time:
 
-```
+```text
 Failed to get community app: 404 message: Could not resolve CloudronVersions.json from URL
 ```
 
@@ -174,7 +174,7 @@ TLS, and complete a full client round trip with verified integrity. That is the 
 **Read those figures with care, because I first read them wrongly.** `memory.current` in cgroup v2
 **includes page cache**. Breaking down the peak state:
 
-```
+```text
 anon    243 MiB    real, non-reclaimable
 file    725 MiB    page cache, reclaimed under pressure
 kernel   38 MiB
@@ -260,7 +260,7 @@ Neither is a package defect, but both look like one, so both are in `POSTINSTALL
 `lores://`. A client using `lore://` reads the TLS handshake as an HTTP/2 frame header, gets a
 nonsensical length, and retries indefinitely:
 
-```
+```text
 gRPC connecting: http://…:41337/
 gRPC failure: … GoAway(b"", FRAME_SIZE_ERROR, Library)      x60
 ```

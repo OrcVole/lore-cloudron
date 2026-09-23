@@ -20,7 +20,7 @@ restricted, and an application running unprivileged as `cloudron` cannot read th
 For an app that terminates its own TLS, this is the whole point of the addon, and the failure mode is
 poor. Lore starts, stages its listeners, and then dies with:
 
-```
+```text
 Endpoint returned error: Permission denied (os error 13), triggering shutdown
 malformed private key: I/O error: Permission denied (os error 13)
 ```
@@ -59,7 +59,7 @@ Lore listens on 41337 for both QUIC (UDP) and gRPC (TCP). The manifest reference
 `tcpPorts` and `udpPorts` but does not state whether the same number may appear in both. It can, and
 the CLI accepted it without complaint:
 
-```
+```text
 Port LORE_GRPC_PORT: 41337
 Port LORE_QUIC_PORT: 41337
 ```
@@ -84,7 +84,7 @@ We tested it rather than designing around it. An app-scoped backup was started w
 `commit` was streaming 380 MB of new fragments into the store, and the overlap was verified by
 sampling the store size during the backup rather than assumed:
 
-```
+```text
 store at backup start : 783,044 KiB   (writer confirmed alive)
 store at backup end   : 1,171,800 KiB
 growth DURING backup  : 388,756 KiB

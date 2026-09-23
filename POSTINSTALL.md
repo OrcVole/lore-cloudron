@@ -2,7 +2,7 @@
 
 Check it in one command, from any machine with the [`lore` client](https://github.com/EpicGames/lore/releases) installed:
 
-```
+```text
 lore repository list lores://myapp.example.com:41337
 ```
 
@@ -18,7 +18,7 @@ The health indicator beside this app in your dashboard tells you the server is u
 
 ## Your first repository
 
-```
+```bash
 lore repository create lores://myapp.example.com:41337/my-project
 cd my-project
 lore stage . --scan
