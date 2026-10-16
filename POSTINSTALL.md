@@ -36,13 +36,13 @@ lore push
 
 **For most people the simplest answer is to close the ports.** If your team reaches this server over a VPN or from inside your own network, turn off the TCP and UDP port forwarding for this app in the dashboard. It stays fully usable, and nothing on the public internet can touch it.
 
-If you need it reachable from anywhere, configure JWT authentication instead: edit `/app/data/config/local.toml` through the dashboard file manager, fill in the `[server.auth]` block for your identity provider, and restart the app. This is Lore's own token system rather than Cloudron single sign-on, so your users will not log in through the dashboard.
+If you need it reachable from anywhere, configure JWT authentication instead: edit `/app/data/config/local.toml` through the dashboard file manager, fill in the `[server.auth]` block for your identity provider, and restart the app. From Lore 0.10.1, a `[server.auth]` that authorises from token claims (no `auth_url`) also needs a `[server.auth.oidc]` table with your provider's public `client_id`, or the server refuses to start. This is Lore's own token system rather than Cloudron single sign-on, so your users will not log in through the dashboard.
 
 ## Two things worth knowing
 
 **Keep both port numbers the same.** The TCP and UDP ports must match, because clients use one address for both. The dashboard lets you change them independently and will not warn you.
 
-**Your data is backed up normally.** Everything Lore stores lives in the app's data directory, so Cloudron's backups cover it, and a restore brings it all back. Verified, including a restore that rolled the server back cleanly.
+**Your data is backed up normally.** Everything Lore stores lives in the app's data directory, so Cloudron's backups cover it, and a restore brings it all back. Verified, including a restore that rolled the server back cleanly. One timing detail: Lore writes new pushes to disk about every 10 seconds, so a backup taken within a few seconds of a push can miss that push. Scheduled backups are unaffected; before a manual backup, wait half a minute after your last push.
 
 ---
 

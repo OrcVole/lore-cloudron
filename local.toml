@@ -98,6 +98,11 @@ port = 41339
 # see POSTINSTALL.md for the two hardening paths.
 # [server.auth]
 # jwt_issuer = ""
-# jwt_audience = ""
+# jwt_audience = [""]          # a list: a bare string fails to parse (checked on 0.10.1)
+# jwt_typ = "at+jwt"           # optional, 0.10.1+: reject tokens whose typ header does not match
 # [server.auth.jwk]
 # endpoint = ""
+# From 0.10.1 a [server.auth] with no [environment.endpoint] auth_url REFUSES TO START
+# without this table (checked on 0.10.1): the provider's public client id.
+# [server.auth.oidc]
+# client_id = ""

@@ -1,3 +1,15 @@
+[0.2.2]
+
+- Base image cloudron/base 5.1.0 to 6.0.0 (Ubuntu 26.04, glibc 2.43). The package installs no apt packages and ships no ffmpeg, so there is no application change from the OS move; the released binary links cleanly (checked with ldd at build time).
+- Upstream EpicGames/lore 0.10.0 to 0.10.1.
+- Auth, opt-in only: a `[server.auth]` without `[environment.endpoint] auth_url` (authorising from token claims) now refuses to start unless `[server.auth.oidc]` is present with the provider's public `client_id`. Tier 2 (`resource_claim` set) also needs `resource_template` or `scope_template` there, and Tier 1 must set neither. New optional `[server.auth] jwt_typ` accepts a string or array of JWT `typ` header values; when set, tokens without a matching `typ` are rejected. This package ships with auth off and its seeded configuration is unchanged, so nothing changes unless you enabled `[server.auth]` in your own `/app/data/config/local.toml`; if you did, add the `oidc` table before updating.
+- Logs default to `warn` rather than `error`; `RUST_LOG=error` restores the old output.
+- Documented: Lore flushes new pushes to disk about every 10 seconds, so a backup taken within a few
+  seconds of a push can miss it (measured 2026-10-16: a push 4 s before a backup was not in it, one 35 s
+  before was). Scheduled backups are unaffected; wait half a minute after a push before a manual backup.
+- New low disk space warning for the local stores (`[server.local_store_monitor]`, 10 GiB threshold, checked every 30 seconds).
+- Client-facing changes: the C API and `lore.thin_client.v1` diff messages changed shape (rebuild consumers against the new `lore.h`); several `lore sync`, `lore stage` and `lore push` fixes.
+
 [0.2.1]
 
 - Upstream EpicGames/lore 0.9.0 to 0.10.0.
