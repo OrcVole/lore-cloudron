@@ -6,8 +6,8 @@
   "description": "file://DESCRIPTION.md",
   "changelog": "file://CHANGELOG.md",
   "tagline": "Version control for very large binary assets",
-  "version": "0.2.2",
-  "upstreamVersion": "0.10.1",
+  "version": "0.2.3",
+  "upstreamVersion": "0.11.0",
   "healthCheckPath": "/health_check",
   "httpPort": 41339,
   "tcpPorts": {
@@ -49,5 +49,5 @@
     "assets",
     "rust"
   ],
-  "dockerImage": "ghcr.io/orcvole/lore-cloudron@sha256:8c89143e49062cfcbc5f381ffedb74feaaf293e953aab4878aca399b1187a3b2"
+  "dockerImage": "ghcr.io/orcvole/lore-cloudron@sha256:8af5ae52bc0d0c6f08874a870e1c050315a574c64984831417e96b51eb26590b"
 }

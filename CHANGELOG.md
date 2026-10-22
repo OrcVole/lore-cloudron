@@ -1,3 +1,8 @@
+[0.2.3]
+
+- Base image cloudron/base 6.0.0 to 6.0.1: Ubuntu security updates, including the removal of the compromised eMudhra emSign ECC Root CA - G3 from the trusted certificates.
+- Upstream EpicGames/lore 0.10.1 to 0.11.0. Security items confirmed in upstream's notes: the vendored QUIC library (`quinn-proto`) moves to 0.11.19, fixing CVE-2026-25800 (unauthenticated remote memory exhaustion) and other memory-exhaustion, stream-limit, Retry-token and path MTU issues; the server now refuses `MutableStore` and `MutableCompareAndSwap` writes to repository metadata, branch metadata and branch latest pointers; data fetched from a remote store is verified on receipt.
+- Auth, opt-in only: the server refuses to start if `[server.auth] resource_id_template` or `[server.auth.oidc]` `resource_template` or `scope_template` lacks `{id}`, `[server.auth] identity_claim` is removed, and pushing to a protected branch needs the `push-protected` action. This package ships with auth off and its seeded configuration sets none of these, so nothing changes unless you enabled `[server.auth]` in your own `/app/data/config/local.toml`; if you did, check those keys before updating.
 [0.2.2]
 
 - Base image cloudron/base 5.1.0 to 6.0.0 (Ubuntu 26.04, glibc 2.43). The package installs no apt packages and ships no ffmpeg, so there is no application change from the OS move; the released binary links cleanly (checked with ldd at build time).

@@ -5,17 +5,17 @@
 # binary links cleanly against cloudron/base with no additional packages, verified with
 # the dynamic linker on 2026-08-04:
 #   linux-vdso, libgcc_s, libm, libc, ld-linux-x86-64 -- all present on the base.
-# Rechecked on cloudron/base 6.0.0 (Ubuntu 26.04) on 2026-10-16: the fetch stage below fails
+# Rechecked on cloudron/base 6.0.0 (Ubuntu 26.04) on 2026-10-16, and on 6.0.1 on 2026-10-22: the fetch stage below fails
 # the build if ldd reports any library as not found.
 #
 # linux/amd64 only. The aarch64 Linux asset is built for Graviton3 with SVE
 # (...-neoverse-512tvb...) and is not a general arm64 build.
 
-FROM docker.io/cloudron/base:6.0.0@sha256:9bed4c8fa880645f8e669041ee28febe941481d00e9445e3e5a5483cb541d09b AS fetch
+FROM docker.io/cloudron/base:6.0.1@sha256:7b1e729960c3ca312d26e886917ba89483241bba0219ff292858e10d9d5768ee AS fetch
 
-ARG LORE_VERSION=0.10.1
-# sha256 of loreserver-v0.10.1-x86_64-unknown-linux-gnu.tar.gz, 16,368,874 bytes.
-ARG LORE_SHA256=65b76ff56d8262c26f036e4a8db1df58c5c29d80ec1a49920f137ff6d0767ebd
+ARG LORE_VERSION=0.11.0
+# sha256 of loreserver-v0.11.0-x86_64-unknown-linux-gnu.tar.gz, 17,212,388 bytes.
+ARG LORE_SHA256=0c7fb344ec44701ee63702c4eda67853d6b141cde44be482f52a8a490e6902b3
 
 # Pin the exact filename. The debug asset (lore-debug-...) is 353 MB and sorts adjacent
 # to the 15 MB one wanted here, and the CLI asset (lore-...) sorts adjacent too.
@@ -28,7 +28,7 @@ RUN mkdir -p /build && cd /build \
     && ./loreserver --version \
     && ! ldd ./loreserver | grep -q 'not found'
 
-FROM docker.io/cloudron/base:6.0.0@sha256:9bed4c8fa880645f8e669041ee28febe941481d00e9445e3e5a5483cb541d09b
+FROM docker.io/cloudron/base:6.0.1@sha256:7b1e729960c3ca312d26e886917ba89483241bba0219ff292858e10d9d5768ee
 
 # TRAP: the release tarball ships loreserver as rw-r--r--, with no exec bit. Running it
 # without chmod fails with "Permission denied", which misreads as a mount or security
